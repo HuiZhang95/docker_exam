@@ -1,0 +1,66 @@
+version: '3.9'
+services:
+
+  start_api:
+    image: datascientest/fastapi:1.0.0
+    container_name: start_api_container
+    networks: 
+      - docker_exam_default
+    ports:
+      - "8000:8000"
+
+  authentication:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: authentication_container
+    networks: 
+      - docker_exam_default
+    depends_on: 
+      - start_api
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    environment:
+      - LOG=1
+      - API_URL=http://start_api_container:8000
+    command: ["sh", "-c", "sleep 5 && python /app/src/authentication_test.py"]
+  
+  authorization:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: authorization_container
+    networks: 
+      - docker_exam_default
+    depends_on: 
+      - start_api
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    environment:
+      - LOG=1
+      - API_URL=http://start_api_container:8000
+    command: ["sh", "-c", "sleep 5 && python /app/src/authorization_test.py"]
+
+
+  content:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: content_container
+    networks: 
+      - docker_exam_default
+    depends_on: 
+      - start_api
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    environment:
+      - LOG=1
+      - API_URL=http://start_api_container:8000
+    command: ["sh", "-c", "sleep 5 && python /app/src/content_test.py"]
+
+networks:
+  docker_exam_default:
+  driver: bridge
